@@ -1,8 +1,7 @@
 fastapi
-google-cloud-storage
 numpy
+Pillow
 pydantic
-scikit-image
 tensorflow
 tensorflow-hub
 uvicorn

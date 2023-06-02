@@ -1,13 +1,14 @@
 
-from datetime import datetime
 from fastapi import FastAPI
+from io import BytesIO
+from PIL import Image
 from pydantic import BaseModel
-from skimage import io
 import numpy as np
+import requests
 import time
 import tensorflow as tf
 import tensorflow_hub as hub
-from .gcs import get_cs_file_url
+from tensorflow.keras.preprocessing.image import img_to_array
 
 
 app = FastAPI()
@@ -19,33 +20,35 @@ class Item(BaseModel):
     url: str
     filename: str
 
+def transform_image(img):
+    img = img_to_array(img)
+    img = img.astype(np.float64) / 255
+    imgs = tf.image.resize(img, [224,224])
+    imgs = np.expand_dims(imgs, axis=0)
+    return imgs
+
 @app.get("/")
 def read_root():
     return {"Hello": "World"}
 
 @app.put("/predict")
 def predict(item:Item):
-    print(item.url)
-    print(item.filename)
-
-    link = get_cs_file_url('cs23-ps414-images-bkt', 'item.filename')
-    image = io.imread(link)
-    image_resize = tf.image.resize(image,[224,224])
-    image_batch = np.expand_dims(image_resize,0)
+    response = requests.get(item.url)
+    image = Image.open(BytesIO(response.content))
+    image = transform_image(image)
 
     start_time = time.time()
-    prediction = MODEL.predict(image_batch)
+    prediction = MODEL.predict(image)
     end_time = time.time()
 
     predicted_class = CLASS_NAMES[np.argmax(prediction[0])]
     confidence = np.max(prediction[0])
     inference_time = end_time - start_time
-    detected_at = end_time
 
     return {
         'filename': item.filename,
         'label': predicted_class,
         'confidence': float(confidence),
         'inferenceTime': inference_time,
-        'detectedAt': detected_at
+        'detectedAt': end_time
     }

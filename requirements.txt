@@ -1,0 +1,8 @@
+fastapi
+google-cloud-storage
+numpy
+pydantic
+scikit-image
+tensorflow
+tensorflow-hub
+uvicorn

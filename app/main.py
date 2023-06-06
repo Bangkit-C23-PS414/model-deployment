@@ -10,6 +10,7 @@ import tensorflow as tf
 import tensorflow_hub as hub
 from tensorflow.keras.preprocessing.image import img_to_array
 import configparser
+from fastapi.responses import JSONResponse
 
 
 app = FastAPI()
@@ -59,11 +60,30 @@ def predict(item:Item):
             'inferenceTime': inference_time,
             'detectedAt': end_time
         }
+
+        response = {
+            "message": "Success",
+            "data": data
+        }
+        status_code = 200
+
+    except ValueError as e:
+        data = None
+        response = {
+            "message": e.__str__(),
+            "data": data
+        }
+        status_code = 400
+
     except Exception as e:
         data = None
-        print(e)
+        response = {
+            "message": e.__str__(),
+            "data": data
+        }
+        status_code = 500
 
     image_service = get_url_image_service()
     requests.put(image_service + 'image-detections/update', data=data)
 
-    return data
+    return JSONResponse(content=response, status_code=status_code)

@@ -51,7 +51,7 @@ def predict(item:Item):
 
         predicted_class = CLASS_NAMES[np.argmax(prediction[0])]
         confidence = np.max(prediction[0])
-        inference_time = (end_time - start_time)
+        inference_time = (end_time - start_time) * 1000
 
         data = {
             'filename': item.filename,

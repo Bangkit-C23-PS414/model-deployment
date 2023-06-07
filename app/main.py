@@ -18,7 +18,7 @@ MODEL = tf.keras.models.load_model("./model/model.h5", custom_objects = {"KerasL
 CLASS_NAMES = ['Healthy', 'Miner', 'Phoma', 'Rust']
 
 class MessagesReq(BaseModel):
-    messages: dict
+    message: dict
     subscription: str
 
 def transform_image(img):

@@ -1,4 +1,3 @@
-
 from fastapi import FastAPI
 from io import BytesIO
 from PIL import Image
@@ -11,7 +10,6 @@ import tensorflow_hub as hub
 from tensorflow.keras.preprocessing.image import img_to_array
 import configparser
 from fastapi.responses import JSONResponse
-
 
 app = FastAPI()
 
@@ -45,13 +43,13 @@ def predict(item:Item):
         image = Image.open(BytesIO(response.content))
         image = transform_image(image)
 
-        start_time = time.time()
+        start_time = time.time() * 1000
         prediction = MODEL.predict(image)
-        end_time = time.time()
+        end_time = time.time() * 1000
 
         predicted_class = CLASS_NAMES[np.argmax(prediction[0])]
         confidence = np.max(prediction[0])
-        inference_time = (end_time - start_time) * 1000
+        inference_time = end_time - start_time
 
         data = {
             'filename': item.filename,

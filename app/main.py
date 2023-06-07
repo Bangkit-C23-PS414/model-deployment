@@ -36,7 +36,7 @@ def get_url_image_service():
 def read_root():
     return {"Hello": "World"}
 
-@app.put("/predict")
+@app.post("/predict")
 def predict(item:Item):
     try:
         response = requests.get(item.url)

@@ -55,8 +55,8 @@ def predict(item:Item):
             'filename': item.filename,
             'label': predicted_class,
             'confidence': float(confidence),
-            'inferenceTime': inference_time,
-            'detectedAt': end_time
+            'inferenceTime': round(inference_time),
+            'detectedAt': round(end_time)
         }
 
         response = {

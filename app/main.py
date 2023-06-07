@@ -17,7 +17,7 @@ app = FastAPI()
 MODEL = tf.keras.models.load_model("./model/model.h5", custom_objects = {"KerasLayer" : hub.KerasLayer})
 CLASS_NAMES = ['Healthy', 'Miner', 'Phoma', 'Rust']
 
-class MessagesReq(BaseModel):
+class MessageReq(BaseModel):
     message: dict
     subscription: str
 
@@ -38,9 +38,9 @@ def read_root():
     return {"Hello": "World"}
 
 @app.post("/predict")
-def predict(req: MessagesReq):
+def predict(req: MessageReq):
     try:
-        envelope = req.messages
+        envelope = req.message
         payload = base64.b64decode(envelope['data'])
         payload = payload.decode()
         payload = eval(payload)

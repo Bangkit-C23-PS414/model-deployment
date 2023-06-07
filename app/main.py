@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from io import BytesIO
 from PIL import Image
 from pydantic import BaseModel
+import base64
 import numpy as np
 import requests
 import time
@@ -16,9 +17,9 @@ app = FastAPI()
 MODEL = tf.keras.models.load_model("./model/model.h5", custom_objects = {"KerasLayer" : hub.KerasLayer})
 CLASS_NAMES = ['Healthy', 'Miner', 'Phoma', 'Rust']
 
-class Item(BaseModel):
-    url: str
-    filename: str
+class MessagesReq(BaseModel):
+    messages: dict
+    subscription: str
 
 def transform_image(img):
     img = img_to_array(img)
@@ -37,9 +38,14 @@ def read_root():
     return {"Hello": "World"}
 
 @app.post("/predict")
-def predict(item:Item):
+def predict(req: MessagesReq):
     try:
-        response = requests.get(item.url)
+        envelope = req.messages
+        payload = base64.b64decode(envelope['data'])
+        payload = payload.decode()
+        payload = eval(payload)
+
+        response = requests.get(payload['url'])
         image = Image.open(BytesIO(response.content))
         image = transform_image(image)
 
@@ -52,7 +58,7 @@ def predict(item:Item):
         inference_time = end_time - start_time
 
         data = {
-            'filename': item.filename,
+            'filename': payload['filename'],
             'label': predicted_class,
             'confidence': float(confidence),
             'inferenceTime': round(inference_time),

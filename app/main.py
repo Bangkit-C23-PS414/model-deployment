@@ -3,6 +3,7 @@ from io import BytesIO
 from PIL import Image
 from pydantic import BaseModel
 import base64
+import logging
 import numpy as np
 import requests
 import time
@@ -17,8 +18,8 @@ app = FastAPI()
 MODEL = tf.keras.models.load_model("./model/model.h5", custom_objects = {"KerasLayer" : hub.KerasLayer})
 CLASS_NAMES = ['Healthy', 'Miner', 'Phoma', 'Rust']
 
-class MessagesReq(BaseModel):
-    messages: dict
+class MessageReq(BaseModel):
+    message: dict
     subscription: str
 
 def transform_image(img):
@@ -38,9 +39,12 @@ def read_root():
     return {"Hello": "World"}
 
 @app.post("/predict")
-def predict(req: MessagesReq):
+def predict(req: MessageReq):
     try:
-        envelope = req.messages
+        envelope = req.message
+        logging.warning(req.message)
+        logging.warning('Message Masuk')
+
         payload = base64.b64decode(envelope['data'])
         payload = payload.decode()
         payload = eval(payload)
@@ -72,6 +76,8 @@ def predict(req: MessagesReq):
         status_code = 200
 
     except ValueError as e:
+        logging.warning(req.message)
+        logging.warning(e.__str__())
         data = None
         response = {
             "message": e.__str__(),
@@ -80,6 +86,8 @@ def predict(req: MessagesReq):
         status_code = 400
 
     except Exception as e:
+        logging.warning(req.message)
+        logging.warning(e.__str__())
         data = None
         response = {
             "message": e.__str__(),
